@@ -17,8 +17,8 @@
 # 
 # Author  : Jeong Han Lee
 # email   : jeonghan.lee@gmail.com
-# Date    : Wednesday, February 14 02:37:45 CET 2018
-# version : 0.0.1
+# Date    : Wednesday, February 14 13:47:04 CET 2018
+# version : 0.0.2
 # 
 
 where_am_I := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -26,7 +26,21 @@ where_am_I := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 include $(E3_REQUIRE_TOOLS)/driver.makefile
 
 
-#for pcre version 8 and higher: have to create pcre.h and define some variables
+## FROM NON-AUTOTOOLS-BUILD
+
+USR_INCLUDES += -I$(where_am_I)
+
+
+## (1) Copy or rename the file config.h.generic as config.h, and edit the macro
+##     settings that it contains to whatever is appropriate for your environment.
+##
+##    we covert config.h.generic to config.h and pcre
+##
+USR_CPPFLAGS += -DHAVE_CONFIG_H
+
+## I copied the following CPPFLAGS from epics-module/stream/pcre/Makefile
+## They are defined in config.h also
+## for pcre version 8 and higher: have to create pcre.h and define some variables
 USR_CPPFLAGS += -DHAVE_MEMMOVE=1 -DNEWLINE=10 -DINT64_MAX="(0x7FFFFFFFFFFFLL)"
 USR_CPPFLAGS += -DLINK_SIZE=2 -DMAX_NAME_COUNT=10000 -DMAX_NAME_SIZE=32
 USR_CPPFLAGS += -DMATCH_LIMIT=10000000 -DMATCH_LIMIT_RECURSION=MATCH_LIMIT
@@ -35,49 +49,78 @@ USR_CPPFLAGS += -DSUPPORT_PCRE8
 
 
 
-USR_INCLUDES += -I$(where_am_I)
-
 SRC:=
 
-SOURCES += $(SRC)/pcre_config.c
-SOURCES += $(SRC)/pcre_fullinfo.c
-SOURCES += $(SRC)/pcre_tables.c
-SOURCES += $(SRC)/pcre_exec.c
-SOURCES += $(SRC)/pcre_valid_utf8.c
-SOURCES += $(SRC)/pcre_study.c
-SOURCES += $(SRC)/pcre_xclass.c
-SOURCES += $(SRC)/pcre_jit_test.c
-SOURCES += $(SRC)/pcre_jit_compile.c
-SOURCES += $(SRC)/pcre_compile.c
+
+##(5) For an 8-bit library, compile the following source files, setting
+##     -DHAVE_CONFIG_H as a compiler option if you have set up config.h with your
+##     configuration, or else use other -D settings to change the configuration
+##     as required.
+
+## 
+## Note that you must still compile pcre_jit_compile.c, even if you have not
+## defined SUPPORT_JIT in config.h, because when JIT support is not
+## configured, dummy functions are compiled. When JIT support IS configured,
+## pcre_jit_compile.c #includes sources from the sljit subdirectory, where
+## there should be 16 files, all of whose names begin with "sljit".
+
+
+
 SOURCES += $(SRC)/pcre_byte_order.c
-SOURCES += $(SRC)/pcre_ord2utf8.c
-SOURCES += $(SRC)/pcre_chartables.c.dist
-SOURCES += $(SRC)/pcre_string_utils.c
-SOURCES += $(SRC)/pcre_maketables.c
-SOURCES += $(SRC)/pcre_globals.c
-SOURCES += $(SRC)/pcre_version.c
-SOURCES += $(SRC)/pcre_get.c
-SOURCES += $(SRC)/pcre_ucd.c
-SOURCES += $(SRC)/pcre_newline.c
+#SOURCES += $(SRC)/pcre_chartables.c
+SOURCES += $(SRC)/pcre_compile.c
+SOURCES += $(SRC)/pcre_config.c
 SOURCES += $(SRC)/pcre_dfa_exec.c
+SOURCES += $(SRC)/pcre_exec.c
+SOURCES += $(SRC)/pcre_fullinfo.c
+SOURCES += $(SRC)/pcre_get.c
+SOURCES += $(SRC)/pcre_globals.c
+SOURCES += $(SRC)/pcre_jit_compile.c
+SOURCES += $(SRC)/pcre_maketables.c
+SOURCES += $(SRC)/pcre_newline.c
+SOURCES += $(SRC)/pcre_ord2utf8.c
 SOURCES += $(SRC)/pcre_refcount.c
+SOURCES += $(SRC)/pcre_string_utils.c
+SOURCES += $(SRC)/pcre_study.c
+SOURCES += $(SRC)/pcre_tables.c
+SOURCES += $(SRC)/pcre_ucd.c
+SOURCES += $(SRC)/pcre_valid_utf8.c
+SOURCES += $(SRC)/pcre_version.c
+SOURCES += $(SRC)/pcre_xclass.c
+
+SRCS_GENS += pcre_chartables.c
+SOURCES += $(SRCS_GENS)
+
 SOURCES += $(SRC)/pcre_printint.c
 
-#SOURCES += $(notdir $(wildcard $(SRC)/pcre_*.c))
-
+## (1) Copy or rename the file config.h.generic as config.h
+## (2) Copy or rename the file pcre.h.generic as pcre.h.
+## (3) Copy or rename file pcre_chartables.c.dist as pcre_chartables.c.
+## (4) Ensure that you have the following header files:
 
 HDRS_GENS += pcre.h
 HDRS_GENS += config.h
 
-HEADERS += pcre.h
+HEADERS += $(HDRS_GENS)
+
+## It is not mandatory, but I would like to install them in the INSTALLATION_TOP
+##
+HEADERS += $(SRC)/pcre_internal.h
+HEADERS += $(SRC)/ucp.h
+
+#SRCS_GENS += pcre_chartables.c
 
 vpath %.generic   $(where_am_I)$(SRC)
+vpath %.dist      $(where_am_I)$(SRC)
 
-pcre_printint$(DEP): $(HDRS_GENS)
-
-
+pcre_printint$(DEP): $(SRCS_GENS)  $(HDRS_GENS)
 
 %.h: %.h.generic
+	$(CP) $< $@
+
+
+
+%.c: %.c.dist
 	$(CP) $< $@
 
 # %.c: pcre_chartables.c.dist
