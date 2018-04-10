@@ -31,21 +31,25 @@ include $(E3_REQUIRE_TOOLS)/driver.makefile
 USR_INCLUDES += -I$(where_am_I)
 
 
-## (1) Copy or rename the file config.h.generic as config.h, and edit the macro
-##     settings that it contains to whatever is appropriate for your environment.
-##
-##    we covert config.h.generic to config.h and pcre
-##
-USR_CPPFLAGS += -DHAVE_CONFIG_H
+## (1) We don't use config.h, but to use -D
+##     Some from generated config.h by Debian 8 (./configure)
+##     Some from epics-module/stream
 
-## I copied the following CPPFLAGS from epics-module/stream/pcre/Makefile
-## They are defined in config.h also
-## for pcre version 8 and higher: have to create pcre.h and define some variables
-USR_CPPFLAGS += -DHAVE_MEMMOVE=1 -DNEWLINE=10 -DINT64_MAX="(0x7FFFFFFFFFFFLL)"
-USR_CPPFLAGS += -DLINK_SIZE=2 -DMAX_NAME_COUNT=10000 -DMAX_NAME_SIZE=32
+USR_CPPFLAGS += -fvisibility=hidden
+USR_CPPFLAGS += -DHAVE_MEMMOVE=1
+USR_CPPFLAGS += -DNEWLINE=10
+USR_CPPFLAGS += -DINT64_MAX="(0x7FFFFFFFFFFFLL)"
+USR_CPPFLAGS += -DLINK_SIZE=2
+USR_CPPFLAGS += -DMAX_NAME_COUNT=10000 -DMAX_NAME_SIZE=32
 USR_CPPFLAGS += -DMATCH_LIMIT=10000000 -DMATCH_LIMIT_RECURSION=MATCH_LIMIT
-USR_CPPFLAGS += -DPOSIX_MALLOC_THRESHOLD=10 -DPARENS_NEST_LIMIT=250
+USR_CPPFLAGS += -DPOSIX_MALLOC_THRESHOLD=10
+USR_CPPFLAGS += -DPARENS_NEST_LIMIT=250
 USR_CPPFLAGS += -DSUPPORT_PCRE8
+USR_CPPFLAGS += -DHAVE_STDINT_H=1
+USR_CPPFLAGS += -DHAVE_STDLIB_H=1
+USR_CPPFLAGS += -DHAVE_STRING_H=1
+USR_CPPFLAGS += -DHAVE_UNISTD_H=1
+USR_CPPFLAGS += -DVERSION=$(E3_MODULE_VERSION)
 
 
 
@@ -99,14 +103,9 @@ SOURCES += $(SRC)/pcre_printint.c
 ## (4) Ensure that you have the following header files:
 
 HDRS_GENS += pcre.h
-HDRS_GENS += config.h
 
 HEADERS += $(HDRS_GENS)
 
-## It is not mandatory, but I would like to install them in the INSTALLATION_TOP
-##
-HEADERS += $(SRC)/pcre_internal.h
-HEADERS += $(SRC)/ucp.h
 
 #SRCS_GENS += pcre_chartables.c
 
