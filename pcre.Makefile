@@ -35,7 +35,6 @@ USR_INCLUDES += -I$(where_am_I)
 ##     Some from generated config.h by Debian 8 (./configure)
 ##     Some from epics-module/stream
 
-USR_CPPFLAGS += -fvisibility=hidden
 USR_CPPFLAGS += -DHAVE_MEMMOVE=1
 USR_CPPFLAGS += -DNEWLINE=10
 USR_CPPFLAGS += -DINT64_MAX="(0x7FFFFFFFFFFFLL)"
