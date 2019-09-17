@@ -1,4 +1,14 @@
-# e3-pcre
+e3-pcre
+===
+ESS Site-specific EPICS module : pcre
+
+
+## Dependency Plot
+
+|![pcre dep](docs/pcre.png)|
+| :---: |
+|**Figure 1** Depdendency Tree. |
+
 
 This implemenation is base on the NON-AUTOTOOLS-BUILD. And the epics-module/stream/pcre/ USR_CPPFLAGS are used to setup config.h as well.
 
