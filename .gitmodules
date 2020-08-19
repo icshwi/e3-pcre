@@ -1,4 +1,4 @@
 [submodule "pcre"]
 	path = pcre
-	url = https://github.com/jeonghanlee/pcre
+	url = https://github.com/icshwi/pcre
 	ignore = dirty
