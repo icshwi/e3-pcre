@@ -1,3 +1,7 @@
+# Deprecation notice
+
+2020-08-21: This remote has been deprecated. Moved to https://gitlab.esss.lu.se/e3/common/e3-pcre.git
+
 e3-pcre
 ===
 ESS Site-specific EPICS module : pcre
